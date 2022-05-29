@@ -25,39 +25,42 @@ fn render_mandelbrot(window_width: u32, window_height: u32, width: f64, aspect_r
 
 fn main() {
 	// Vars
-	let pixel_width: u32 = 640;
-	let pixel_height: u32 = 480;
-	let centre = num::complex::Complex::new(-0.5, 0.);
+	let mut pixel_width: u32 = 640;
+	let mut pixel_height: u32 = 480;
+	let centre = num::complex::Complex::new(0., 0.);
 	let width = 4.;
 	let aspect_ratio = 1.;
-	let max_iter: u64 = 1000;
+	let max_iter: u64 = 256;
 
 	// Calculation
-	let program = fltk::app::App::default();
-	let mut window = fltk::window::Window::new(0, 0, pixel_width as i32, pixel_height as i32, "Test").center_screen();
+	let app = fltk::app::App::default();
+	let mut window = fltk::window::Window::new(0, 0, pixel_width as i32, pixel_height as i32, "Mandelbrot").center_screen();
 	window.make_resizable(true);
 	let mut frame = fltk::frame::Frame::default().center_of(&window);
 	let data = render_mandelbrot(pixel_width, pixel_height, width, aspect_ratio, centre, max_iter);
-	let image = fltk::image::RgbImage::new(&data, pixel_width as i32, pixel_height as i32, fltk::enums::ColorDepth::L8).unwrap();
-	frame.set_image(Some(image));
+	let image = fltk::image::RgbImage::new(&data, pixel_width as i32, pixel_height as i32, fltk::enums::ColorDepth::L8);
+	frame.set_image(image.ok());
 
 	// Display
 	window.end();
-	window.show();
-	while program.wait() {
-		frame.handle(
-			move |f, event| match event {
-				fltk::enums::Event::Resize => {
-					let window = f.parent().unwrap();
-					let window_width = window.width() as u32;
-					let window_height = window.height() as u32;
-					let data = render_mandelbrot(window_width, window_height, width, aspect_ratio, centre, max_iter);
-					let image = fltk::image::RgbImage::new(&data, window_width as i32, window_height as i32, fltk::enums::ColorDepth::L8).unwrap();
-					f.set_image(Some(image));
-					return true;
-				},
-				_ => false
+	frame.handle(move |frame, event| match event {
+		fltk::enums::Event::Resize => {
+			let window = frame.parent().unwrap();
+			let new_width = window.width() as u32;
+			let new_height = window.height() as u32;
+			if new_width == pixel_width && new_height == pixel_height
+			{
+				return true;
 			}
-		);
-	}
+			pixel_width = new_width;
+			pixel_height = new_height;
+			let data = render_mandelbrot(pixel_width, pixel_height, width, aspect_ratio, centre, max_iter);
+			let image = fltk::image::RgbImage::new(&data, pixel_width as i32, pixel_height as i32, fltk::enums::ColorDepth::L8);
+			frame.set_image(image.ok());
+			return true;
+		},
+		_ => false
+	});
+	window.show();
+	app.run().unwrap();
 }
