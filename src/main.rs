@@ -1,8 +1,7 @@
-use fltk::prelude::{WidgetBase, GroupExt, WidgetExt};
+use fltk::prelude::{WidgetBase, GroupExt, WidgetExt, WindowExt};
 
 fn main() {
     // Setup
-    let program = fltk::app::App::default();
     let pixel_width: u64 = 640;
     let pixel_height: u64 = 480;
     let centre = num::complex::Complex::new(-0.5, 0.);
@@ -13,7 +12,8 @@ fn main() {
     let screen_aspect_ratio = (pixel_width as f64) / (pixel_height as f64);
     let applied_aspect_ratio = aspect_ratio / screen_aspect_ratio;
 
-    let mut window = fltk::window::Window::new(100, 100, pixel_width as i32, pixel_height as i32, "Test");
+    let program = fltk::app::App::default();
+    let mut window = fltk::window::Window::new(0, 0, pixel_width as i32, pixel_height as i32, "Test").center_screen();
     let mut frame = fltk::frame::Frame::default().center_of(&window);
     let mut data: Vec<u8> = vec![0; pixel_width as usize * pixel_height as usize];
 
