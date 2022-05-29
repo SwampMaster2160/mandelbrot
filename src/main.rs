@@ -1,7 +1,11 @@
 use fltk::prelude::{WidgetBase, GroupExt, WidgetExt, WindowExt};
 
-fn render_mandelbrot(window_width: u32, window_height: u32, width: f64, aspect_ratio: f64, centre: num::complex::Complex<f64>, max_iter: u64) -> Vec<u8> {
+fn render_mandelbrot(frame: &mut fltk::frame::Frame/*, window_width: u32, window_height: u32*/, width: f64, aspect_ratio: f64, centre: num::complex::Complex<f64>, max_iter: u64) {
 	// Initial calculations
+	let window = frame.parent().unwrap();
+	let window_width = window.width() as u32;
+	let window_height = window.height() as u32;
+
 	let screen_aspect_ratio = (window_width as f64) / (window_height as f64);
 	let applied_aspect_ratio = aspect_ratio / screen_aspect_ratio;
 	
@@ -20,7 +24,9 @@ fn render_mandelbrot(window_width: u32, window_height: u32, width: f64, aspect_r
 		}
 	}
 
-	return data;
+	// Draw
+	let image = fltk::image::RgbImage::new(&data, window_width as i32, window_height as i32, fltk::enums::ColorDepth::L8);
+	frame.set_image(image.ok());
 }
 
 fn main() {
@@ -37,9 +43,7 @@ fn main() {
 	let mut window = fltk::window::Window::new(0, 0, pixel_width as i32, pixel_height as i32, "Mandelbrot").center_screen();
 	window.make_resizable(true);
 	let mut frame = fltk::frame::Frame::default().center_of(&window);
-	let data = render_mandelbrot(pixel_width, pixel_height, width, aspect_ratio, centre, max_iter);
-	let image = fltk::image::RgbImage::new(&data, pixel_width as i32, pixel_height as i32, fltk::enums::ColorDepth::L8);
-	frame.set_image(image.ok());
+	render_mandelbrot(&mut frame, width, aspect_ratio, centre, max_iter);
 
 	// Display
 	window.end();
@@ -54,9 +58,7 @@ fn main() {
 			}
 			pixel_width = new_width;
 			pixel_height = new_height;
-			let data = render_mandelbrot(pixel_width, pixel_height, width, aspect_ratio, centre, max_iter);
-			let image = fltk::image::RgbImage::new(&data, pixel_width as i32, pixel_height as i32, fltk::enums::ColorDepth::L8);
-			frame.set_image(image.ok());
+			render_mandelbrot(frame, width, aspect_ratio, centre, max_iter);
 			return true;
 		},
 		_ => false
