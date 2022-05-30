@@ -13,17 +13,14 @@ fn render_mandelbrot(frame: &mut frame::Frame, width: f64, aspect_ratio: f64, ce
 	
 	// Render
 	let mut data: Vec<u8> = vec![0; window_width as usize * window_height as usize];
-	let mut c = complex::Complex::new(0., 0.);
 	for y in 0..window_height {
-		c.im = ((y as f64) / (window_height as f64) - 0.5) * applied_aspect_ratio * width + centre.im;
+		let im = ((y as f64) / (window_height as f64) - 0.5) * applied_aspect_ratio * width + centre.im;
 		for x in 0..window_width {
-			c.re = ((x as f64) / (window_width as f64) - 0.5) * width + centre.re;
+			let c = complex::Complex::new(((x as f64) / (window_width as f64) - 0.5) * width + centre.re, im);
 			let mut z = complex::Complex::new(0f64, 0f64);
 			let mut iter_count: u64 = 0;
-			while z.re * z.re + z.im * z.im < 4. && iter_count < max_iter {
-				let re_temp = z.re * z.re - z.im * z.im + c.re;
-				z.im = 2. * z.re * z.im + c.im;
-				z.re = re_temp;
+			while z.norm_sqr() < 4. && iter_count < max_iter {
+				z = z * z + c;
 				iter_count += 1;
 			}
 			data[(y as usize) * (window_width as usize) + (x as usize)] = ((iter_count as f64).log(max_iter as f64) * 256.) as u8;
@@ -42,7 +39,7 @@ fn main() {
 	let centre = complex::Complex::new(0., 0.);
 	let width = 4.;
 	let aspect_ratio = 1.;
-	let max_iter: u64 = 256;
+	let max_iter: u64 = 1024;
 
 	// Calculation
 	let app = app::App::default();
